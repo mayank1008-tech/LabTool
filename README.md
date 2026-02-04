@@ -223,7 +223,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Mayank Jain**
 
 - 🌐 GitHub: [@mayank1008-tech](https://github.com/mayank1008-tech)
-- 💼 LinkedIn: [Mayank Jain](https://www.linkedin.com/in/mayank-jain-tech)
+- 💼 LinkedIn: [Mayank Jain](https://www.linkedin.com/in/mayank-jain-78a6bb321/)
 - 📸 Instagram: [@mank_1008](https://instagram.com/mank_1008)
 
 Built with ❤️ and Python
@@ -241,7 +241,7 @@ If LabTool saved you time on your lab reports, give it a ⭐ on GitHub!
 Need help? Have questions?
 
 - 📧 Open an [Issue](https://github.com/mayank1008-tech/LabTool/issues)
-- 💬 Connect on [LinkedIn](https://www.linkedin.com/in/mayank-jain-tech)
+- 💬 Connect on [LinkedIn](https://www.linkedin.com/in/mayank-jain-78a6bb321/)
 - 📱 DM on Instagram [@mank_1008](https://instagram.com/mank_1008)
 
 ---
