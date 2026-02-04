@@ -66,7 +66,7 @@ curl -L -o LabTool.exe "https://github.com/mayank1008-tech/LabTool/releases/late
 
 ### Step 1: Run the Tool
 - **Option A:** Double-click `LabTool.exe` 
-- **Option B:** Open terminal in the folder and type `LabTool`
+- **Option B:** Open terminal in the folder and type `LabTool` OR `./LabTool`
 
 > **💡 Tip:** Make sure you're in the folder that contains both `LabTool` AND your code files!
 
