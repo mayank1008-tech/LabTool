@@ -12,7 +12,7 @@
 
 ## ⚡ Features
 
-- **Multi-Language Support:** Auto-detects and formats `.java`, `.py`, `.c`, `.cpp`, `.cs`, and `.js` files.
+- **Multi-Language Support:** `.java`, `.py`, `.c`, `.cpp`, `.cs`, and `.js` files.
 - **Instant Formatting:** Generates a professional Word (`.docx`) file with Standard Heading, Aim, Source Code, and Output sections.
 - **Background Transmission:** Send your report via email in the background (Multi-threaded) so you can start working on the next experiment immediately.
 - **Crash Proof:** Intelligent file-locking detection prevents crashes if Microsoft Word is currently open.
@@ -140,7 +140,7 @@ $ LabTool.exe
 
 Selection: 1
 
->> Filename: HelloWorld.java          ← Just the filename!
+>> Filename: HelloWorld.java          ← Filename with EXTENSION!!!!
 >> Enter Aim: To print "Hello World" using Java
 
 ✔ Document Generated: HelloWorld_Report.docx
