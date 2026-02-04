@@ -92,6 +92,11 @@ def send_mail_logic(file_path, receiver):
         server.login(config['sender_email'], config['app_key'])
         server.sendmail(config['sender_email'], receiver, msg.as_string()); server.quit()
         return True
+
+    except smtplib.SMTPAuthenticationError:
+        if os.path.exists(CONFIG_FILE): os.remove(CONFIG_FILE)
+        return "Authentication Failed! Saved key was incorrect and has been DELETED. Please try again."
+
     except Exception as e:
         return str(e)
 
@@ -141,11 +146,8 @@ def generate_report():
             doc.save(out_name)
             print(f"{GREEN}✔ Document Generated Locally.{RESET}")
 
-            # --- NEW: REMINDER BEFORE OPENING ---
             print(f"{YELLOW}[REMINDER] Please paste your OUTPUT SCREENSHOTS in the Word file now!{RESET}")
             time.sleep(1.5)
-            # ------------------------------------
-
             open_file_cross_platform(out_name)
 
             if input(f"\n{BOLD}>> Email file? (y/n): {RESET}").lower() == 'y':
@@ -184,8 +186,10 @@ def generate_report():
                 else:
                     print(f"{YELLOW}[SMTP] Transmitting...{RESET}")
                     res = send_mail_logic(os.path.abspath(selected_path), receiver)
-                    if res is True: print(f"{GREEN}✔ Transmission Successful!{RESET}")
-                    else: print(f"{RED}![FAIL] {res}{RESET}")
+                    if res is True:
+                        print(f"{GREEN}✔ Transmission Successful!{RESET}")
+                    else:
+                        print(f"{RED}![FAIL] {res}{RESET}")
             break
         except PermissionError:
             print(f"\n{RED}![ERROR] Access Denied. Close Word and try again.{RESET}"); input()
@@ -207,9 +211,8 @@ def main_menu():
             print(f"{GREEN}✔ Credentials Purged.{RESET}"); time.sleep(1)
 
         elif choice == '4':
-            # --- THE CINEMATIC EXIT ---
             print()
-            quote = "\"Trust the process & U Are the process\" - Mayank Jain"
+            quote = "\"Trust the process && U Are the process\" - Mayank Jain"
             sys.stdout.write(f"{CYAN}{BOLD}")
             for char in quote:
                 sys.stdout.write(char)
@@ -219,13 +222,10 @@ def main_menu():
 
             time.sleep(0.5)
             print(f"\n{RED}[SYSTEM] Shutting down", end="")
-
-            # Dot animation (...)
             for _ in range(3):
-                time.sleep(0.5)
+                time.sleep(0.4)
                 sys.stdout.write(".")
                 sys.stdout.flush()
-
             print(f"{RESET}")
             time.sleep(0.5)
             break
