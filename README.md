@@ -1,6 +1,6 @@
 # LabTool 🚀
 
-> **"Trust the process & U Are the process"** - Mayank Jain
+> **"Trust the process && U Are the process"** - Mayank Jain
 
 **LabTool** is a powerful, cross-platform CLI utility designed to automate the boring process of creating lab reports. Stop manually formatting Word documents—just feed it your code, and let the tool handle the rest.
 
