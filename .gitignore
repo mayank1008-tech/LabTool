@@ -1,0 +1,21 @@
+# IntelliJ Settings
+.idea/
+*.iml
+
+# Python Build Artifacts
+build/
+dist/
+__pycache__/
+*.spec
+
+# Compiled Java/C Files (User Junk)
+*.class
+*.exe
+*.o
+*.obj
+
+# Generated Reports & Temp Files
+*.docx
+*.pdf
+~$*
+*.log
