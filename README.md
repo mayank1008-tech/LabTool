@@ -51,7 +51,7 @@ This way, you can simply type the filename (e.g., `Experiment1.java`) without ne
 3. **Run this command:**
 
 ```powershell
-curl -L -o LabTool.exe "https://github.com/mayank1008-tech/LabTool/releases/latest/download/LabTool.exe"
+curl.exe -L -o LabTool.exe "https://github.com/mayank1008-tech/LabTool/releases/latest/download/LabTool.exe"
 ```
 
 **Method 2: Manual Download**
@@ -104,18 +104,36 @@ Message admin on [LinkedIn](https://www.linkedin.com/in/mayank-jain-78a6bb321/) 
 
 ---
 
-## 🎨 Customization
+# 🎨 Customization Guide
 
-Don't like the default fonts or styles?
+Don't like the default fonts? You can tweak every aspect of the document generation.
 
-1. Select **Option [2] - Customize Styles** from the main menu
-2. Customize:
-   - Heading Fonts & Sizes
-   - Label Styles (Bold/Underline)
-   - Body Text Formatting
-   - Code Block Font & Size
+## Getting Started
 
-Your preferences are applied to all future reports!
+1. Select **Option [2] - Styles** from the main menu.
+2. You will see a list of keys (e.g., `h_font`, `c_size`).
+3. Select the number corresponding to the setting you want to change.
+
+## 📖 Style Key Guide
+
+The settings use prefixes to indicate which part of the document they affect:
+
+| Prefix | Meaning | Example |
+|--------|---------|---------|
+| `h_` | **Header** (The main title "Program") | `h_size` = Title font size |
+| `l_` | **Label** (Section titles like "Aim:", "Source Code:") | `l_bold` = Make labels bold |
+| `b_` | **Body** (The content of your Aim) | `b_font` = Font family for body text |
+| `c_` | **Code** (The source code block) | `c_font` = Font used for code (e.g., Consolas) |
+
+## Example Usage
+
+To change the code font size to 10:
+- Select `c_size`
+- Enter `10`
+
+---
+
+Customize your documents to match your preferred style and formatting!
 
 ---
 
