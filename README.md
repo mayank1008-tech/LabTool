@@ -100,7 +100,7 @@ To use the **Auto-Email** feature, the tool requires a Google App Password to se
 
 ### How to Get an App Password:
 
-Message admin on [LinkedIn](https://www.linkedin.com/in/mayank-jain-tech) for setup guidance.
+Message admin on [LinkedIn](https://www.linkedin.com/in/mayank-jain-78a6bb321/) for setup guidance.
 
 ---
 
