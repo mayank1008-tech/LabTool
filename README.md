@@ -66,9 +66,9 @@ curl -L -o LabTool.exe "https://github.com/mayank1008-tech/LabTool/releases/late
 
 ### Step 1: Run the Tool
 - **Option A:** Double-click `LabTool.exe` 
-- **Option B:** Open terminal in the folder and type `LabTool.exe`
+- **Option B:** Open terminal in the folder and type `LabTool`
 
-> **💡 Tip:** Make sure you're in the folder that contains both `LabTool.exe` AND your code files!
+> **💡 Tip:** Make sure you're in the folder that contains both `LabTool` AND your code files!
 
 ### Step 2: Generate Report
 1. Select **Option [1]** from the main menu
