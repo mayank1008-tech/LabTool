@@ -19,3 +19,7 @@ __pycache__/
 *.pdf
 ~$*
 *.log
+
+# M2 – Uploaded templates and extracted metadata (user data, not committed)
+app/storage/templates/*.docx
+app/storage/template_meta/*.json

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LabTool – Confirm Mapping</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    h1 { margin: 0 0 0.25rem; font-size: 1.8rem; color: #38bdf8; }
+    p.subtitle { margin: 0 0 1.5rem; color: #94a3b8; font-size: 0.9rem; }
+    nav { margin-bottom: 1.5rem; }
+    nav a { color: #38bdf8; text-decoration: none; font-size: 0.88rem; margin-right: 1rem; }
+    nav a:hover { text-decoration: underline; }
+
+    /* Profile metadata inputs */
+    .meta-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+    .meta-row > div { flex: 1; }
+    label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.25rem; margin-top: 0.75rem; }
+    input, select {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border-radius: 7px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: #38bdf8; }
+
+    /* Candidates table */
+    .table-wrap { overflow-x: auto; margin-top: 1.25rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    th {
+      background: #0f172a;
+      color: #94a3b8;
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid #334155;
+    }
+    td {
+      padding: 0.55rem 0.75rem;
+      border-bottom: 1px solid #1e293b;
+      vertical-align: middle;
+    }
+    tr:nth-child(even) td { background: #162032; }
+    .conf-badge {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .conf-high { background: #064e3b; color: #34d399; }
+    .conf-mid  { background: #713f12; color: #fbbf24; }
+    .conf-low  { background: #450a0a; color: #f87171; }
+    .snippet   { max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #cbd5e1; }
+
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      border: none;
+      background: #0ea5e9;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #38bdf8; }
+    button:disabled { background: #334155; cursor: not-allowed; }
+
+    #status {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+    #status.success { background: #064e3b; border: 1px solid #059669; display: block; }
+    #status.error   { background: #450a0a; border: 1px solid #dc2626; display: block; }
+    #status h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+    #status a  { color: #38bdf8; font-weight: 600; text-decoration: none; }
+    #status a:hover { text-decoration: underline; }
+
+    .req-check { font-size: 0.82rem; color: #94a3b8; margin-top: 0.75rem; }
+    .req-check span { margin-right: 0.75rem; }
+    .ok  { color: #34d399; }
+    .bad { color: #f87171; }
+
+    #profileMeta input.input-error { border-color: #dc2626; }
+    .field-error { color: #f87171; font-size: 0.8rem; margin-top: 0.2rem; display: none; }
+    .field-error.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚗️ LabTool – Confirm Mapping</h1>
+    <p class="subtitle">Review the suggested field mappings and correct any mistakes, then save a reusable profile.</p>
+
+    <nav>
+      <a href="/">🏠 Generate Report</a>
+      <a href="/upload-template">📤 Upload Template</a>
+      <a href="/docs" target="_blank">📚 API Docs</a>
+    </nav>
+
+    <div id="loadingMsg">Loading suggestions…</div>
+
+    <!-- Profile metadata inputs -->
+    <div id="profileMeta" style="display:none">
+      <div class="meta-row">
+        <div>
+          <label for="profileId">Profile ID <span style="color:#ef4444">*</span></label>
+          <input id="profileId" type="text" placeholder="e.g. my-lab-profile" />
+          <div class="field-error" id="profileIdError">Please enter a Profile ID.</div>
+        </div>
+        <div>
+          <label for="profileName">Profile Name <span style="color:#ef4444">*</span></label>
+          <input id="profileName" type="text" placeholder="e.g. My Lab Template" />
+          <div class="field-error" id="profileNameError">Please enter a Profile Name.</div>
+        </div>
+      </div>
+
+      <!-- Candidates table -->
+      <div class="table-wrap">
+        <table id="candidateTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Block Snippet</th>
+              <th>Style</th>
+              <th>Confidence</th>
+              <th>Assign to Field</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="req-check" id="reqCheck">
+        Required: <span id="chkAim">⬜ aim</span> <span id="chkCode">⬜ source_code</span> <span id="chkOut">⬜ output</span>
+      </div>
+
+      <button id="saveBtn" disabled>Save Profile</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const FIELD_OPTIONS = ["ignore", "experiment_number", "aim", "source_code", "output"];
+    const REQUIRED = ["aim", "source_code", "output"];
+
+    const params = new URLSearchParams(location.search);
+    const templateId = params.get("template_id") || "";
+
+    const loadingMsg = document.getElementById("loadingMsg");
+    const profileMeta = document.getElementById("profileMeta");
+    const tableBody = document.getElementById("tableBody");
+    const saveBtn = document.getElementById("saveBtn");
+    const statusDiv = document.getElementById("status");
+
+    let candidates = [];
+
+    async function loadSuggestions() {
+      if (!templateId) {
+        loadingMsg.textContent = "No template_id provided. Go back and upload a template first.";
+        return;
+      }
+      try {
+        const resp = await fetch(`/templates/${encodeURIComponent(templateId)}/suggest-mapping`, { method: "POST" });
+        const data = await resp.json();
+        if (!resp.ok) {
+          loadingMsg.textContent = `Error: ${data.detail || JSON.stringify(data)}`;
+          return;
+        }
+        candidates = data.suggestions || [];
+        renderTable(candidates);
+        loadingMsg.style.display = "none";
+        profileMeta.style.display = "block";
+      } catch (err) {
+        loadingMsg.textContent = `Network error: ${err.message}`;
+      }
+    }
+
+    function renderTable(items) {
+      tableBody.innerHTML = "";
+      items.forEach((c, i) => {
+        const conf = c.confidence;
+        const confClass = conf >= 0.6 ? "conf-high" : conf >= 0.3 ? "conf-mid" : "conf-low";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.block_index}</td>
+          <td class="snippet" title="${escHtml(c.text_snippet)}">${escHtml(c.text_snippet)}</td>
+          <td style="color:#94a3b8;font-size:0.8rem">${escHtml(c.style_hint)}</td>
+          <td><span class="conf-badge ${confClass}">${(conf * 100).toFixed(0)}%</span></td>
+          <td>
+            <select data-idx="${i}" onchange="onFieldChange()">
+              ${FIELD_OPTIONS.map(f =>
+                `<option value="${f}" ${f === c.field_name ? "selected" : ""}>${f}</option>`
+              ).join("")}
+            </select>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+      updateReqCheck();
+    }
+
+    function onFieldChange() {
+      updateReqCheck();
+    }
+
+    function updateReqCheck() {
+      const selects = tableBody.querySelectorAll("select");
+      const assigned = new Set(Array.from(selects).map(s => s.value));
+
+      const checkIds = { aim: "chkAim", source_code: "chkCode", output: "chkOut" };
+      let allOk = true;
+      for (const [field, id] of Object.entries(checkIds)) {
+        const el = document.getElementById(id);
+        if (assigned.has(field)) {
+          el.className = "ok"; el.textContent = `✔ ${field}`;
+        } else {
+          el.className = "bad"; el.textContent = `✘ ${field}`;
+          allOk = false;
+        }
+      }
+      saveBtn.disabled = !allOk;
+    }
+
+    saveBtn.addEventListener("click", async () => {
+      const profileIdInput = document.getElementById("profileId");
+      const profileNameInput = document.getElementById("profileName");
+      const profileId = profileIdInput.value.trim();
+      const profileName = profileNameInput.value.trim();
+
+      let hasError = false;
+      const profileIdErr = document.getElementById("profileIdError");
+      const profileNameErr = document.getElementById("profileNameError");
+
+      if (!profileId) {
+        profileIdErr.classList.add("visible");
+        profileIdInput.classList.add("input-error");
+        hasError = true;
+      } else {
+        profileIdErr.classList.remove("visible");
+        profileIdInput.classList.remove("input-error");
+      }
+
+      if (!profileName) {
+        profileNameErr.classList.add("visible");
+        profileNameInput.classList.add("input-error");
+        hasError = true;
+      } else {
+        profileNameErr.classList.remove("visible");
+        profileNameInput.classList.remove("input-error");
+      }
+
+      if (hasError) return;
+
+      const selects = tableBody.querySelectorAll("select");
+      const confirmedMappings = [];
+      selects.forEach((sel, i) => {
+        const field = sel.value;
+        if (field !== "ignore") {
+          confirmedMappings.push({ block_index: candidates[i].block_index, field_name: field });
+        }
+      });
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+      statusDiv.className = "";
+      statusDiv.style.display = "none";
+
+      try {
+        const resp = await fetch("/profiles/from-template", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            template_id: templateId,
+            profile_id: profileId,
+            profile_name: profileName,
+            confirmed_mappings: confirmedMappings,
+          }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          statusDiv.className = "success";
+          statusDiv.innerHTML = `
+            <h3>✅ Profile saved!</h3>
+            <p>Profile ID: <strong>${data.id}</strong> – ready to use with <code>POST /generate</code></p>
+            <a href="/?profile_id=${encodeURIComponent(data.id)}">➡ Go to Generate Report</a>
+          `;
+        } else {
+          statusDiv.className = "error";
+          statusDiv.innerHTML = `<h3>❌ Error</h3><p>${data.detail || JSON.stringify(data)}</p>`;
+        }
+      } catch (err) {
+        statusDiv.className = "error";
+        statusDiv.innerHTML = `<h3>❌ Network error</h3><p>${err.message}</p>`;
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Profile";
+      }
+    });
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    loadSuggestions();
+  </script>
+</body>
+</html>
