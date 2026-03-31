@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LabTool – Generate Report</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 2rem 2.5rem;
+      width: 100%;
+      max-width: 680px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.8rem;
+      color: #38bdf8;
+    }
+    p.subtitle {
+      margin: 0 0 1.75rem;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 0.25rem;
+      margin-top: 1rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      border-radius: 7px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus { border-color: #38bdf8; }
+    textarea { resize: vertical; min-height: 120px; font-family: "Courier New", monospace; }
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: none;
+      background: #0ea5e9;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #38bdf8; }
+    button:disabled { background: #334155; cursor: not-allowed; }
+    #result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+    #result.success {
+      background: #064e3b;
+      border: 1px solid #059669;
+      display: block;
+    }
+    #result.error {
+      background: #450a0a;
+      border: 1px solid #dc2626;
+      display: block;
+    }
+    #result h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+    #result a {
+      color: #38bdf8;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    #result a:hover { text-decoration: underline; }
+    .field-row { display: flex; gap: 1rem; }
+    .field-row > div { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚗️ LabTool</h1>
+    <p class="subtitle">Generate a print-ready lab report DOCX from your source code.</p>
+
+    <form id="genForm">
+      <div class="field-row">
+        <div>
+          <label for="profile_id">Profile ID <span style="color:#ef4444">*</span></label>
+          <input id="profile_id" name="profile_id" type="text" placeholder="e.g. java-default" required />
+        </div>
+        <div>
+          <label for="experiment_number">Experiment Number</label>
+          <input id="experiment_number" name="experiment_number" type="text" placeholder="e.g. 1" />
+        </div>
+      </div>
+
+      <label for="aim">Aim <span style="color:#ef4444">*</span></label>
+      <input id="aim" name="aim" type="text" placeholder="Write a Java program to print Hello World" required />
+
+      <label for="source_code">Source Code <span style="color:#ef4444">*</span></label>
+      <textarea id="source_code" name="source_code" placeholder="Paste your source code here…" required></textarea>
+
+      <label for="output_text">Output (optional – leave blank to insert placeholder)</label>
+      <textarea id="output_text" name="output_text" style="min-height:80px"
+                placeholder="Paste console output text or leave empty to insert screenshot placeholder…"></textarea>
+
+      <button type="submit" id="submitBtn">Generate Report</button>
+    </form>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    document.getElementById("genForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("submitBtn");
+      const resultDiv = document.getElementById("result");
+      btn.disabled = true;
+      btn.textContent = "Generating…";
+      resultDiv.className = "";
+      resultDiv.style.display = "none";
+
+      const payload = {
+        profile_id: document.getElementById("profile_id").value.trim(),
+        experiment_number: document.getElementById("experiment_number").value.trim() || null,
+        aim: document.getElementById("aim").value.trim(),
+        source_code: document.getElementById("source_code").value,
+        output_text: document.getElementById("output_text").value.trim() || null,
+      };
+
+      try {
+        const resp = await fetch("/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          resultDiv.className = "success";
+          resultDiv.innerHTML = `
+            <h3>✅ Report generated successfully!</h3>
+            <p>File: <strong>${data.filename}</strong></p>
+            <a href="${data.download_url}" download="${data.filename}">⬇ Download DOCX</a>
+          `;
+        } else {
+          resultDiv.className = "error";
+          const msg = data.detail || JSON.stringify(data);
+          resultDiv.innerHTML = `<h3>❌ Error</h3><p>${msg}</p>`;
+        }
+      } catch (err) {
+        resultDiv.className = "error";
+        resultDiv.innerHTML = `<h3>❌ Network error</h3><p>${err.message}</p>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Generate Report";
+      }
+    });
+  </script>
+</body>
+</html>

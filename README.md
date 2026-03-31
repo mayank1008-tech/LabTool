@@ -2,15 +2,133 @@
 
 > **"Trust the process && U Are the process"** - Mayank Jain
 
-**LabTool** is a powerful, cross-platform CLI utility designed to automate the boring process of creating lab reports. Stop manually formatting Word documents—just feed it your code, and let the tool handle the rest.
+**LabTool** is a powerful, cross-platform lab report generator that converts your source code into a print-ready Word (`.docx`) document in seconds. It now ships as a **FastAPI web service** with a minimal browser UI and a JSON-driven template profile system — no more hardcoded formatting.
 
 ![Python](https://img.shields.io/badge/Python-3.x-blue?style=for-the-badge&logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-teal?style=for-the-badge&logo=fastapi)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20|%20Linux%20|%20MacOS-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-M1%20Release-brightgreen?style=for-the-badge)
 
 ---
 
-## ⚡ Features
+## 🆕 M1 – FastAPI Web Service (current)
+
+LabTool has been refactored from a single CLI script into a modular **FastAPI application** with:
+
+- **Non-hardcoded Template Profiles** – define font, size, labels, spacing as JSON files.
+- **REST API** for creating profiles and generating reports.
+- **Minimal Web UI** served at `/` for browser-based generation.
+- **Local filesystem storage** for profiles and generated documents.
+
+### 📁 Project Structure
+
+```
+app/
+├── main.py                     # FastAPI app + route registration
+├── core/config.py              # App settings and storage paths
+├── models/schemas.py           # Pydantic schemas
+├── api/
+│   ├── routes_profiles.py      # POST /profiles, GET /profiles/{id}
+│   └── routes_generate.py      # POST /generate, GET /download/{filename}
+├── services/
+│   ├── profile_service.py      # Profile persistence (JSON files)
+│   ├── docx_builder.py         # python-docx document assembly
+│   └── generator_service.py    # Orchestrates profile + builder
+├── storage/
+│   ├── profiles/               # Saved profile JSON files
+│   └── generated/              # Generated .docx files
+└── templates/index.html        # Minimal web UI
+```
+
+### 🚀 Quick Start
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run the server
+uvicorn app.main:app --reload
+
+# 3. Open the web UI
+# http://127.0.0.1:8000/
+#
+# Or browse the auto-generated API docs:
+# http://127.0.0.1:8000/docs
+```
+
+### 🔌 API Endpoints
+
+#### `POST /profiles` – Create a template profile
+
+```bash
+curl -X POST http://127.0.0.1:8000/profiles \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "java-default",
+    "name": "Java Lab Default",
+    "heading_style": {"font_family": "Times New Roman", "font_size": 16, "bold": true},
+    "experiment_number_label": "Program",
+    "aim_section": {
+      "label": "Aim:- ",
+      "label_style": {"font_size": 14, "bold": true, "underline": true},
+      "body_style":  {"font_size": 12}
+    },
+    "source_code_section": {
+      "label": "SOURCE CODE:-",
+      "label_style": {"font_size": 14, "bold": true, "underline": true},
+      "body_style":  {"font_family": "Courier New", "font_size": 11}
+    },
+    "output_section": {
+      "label": "OUTPUT:-",
+      "label_style": {"font_size": 14, "bold": true, "underline": true},
+      "body_style":  {"font_size": 12, "italic": true}
+    },
+    "output_placeholder": "[ PASTE SCREENSHOT HERE ]"
+  }'
+```
+
+#### `GET /profiles/{id}` – Fetch a profile
+
+```bash
+curl http://127.0.0.1:8000/profiles/java-default
+```
+
+#### `POST /generate` – Generate a `.docx` report
+
+```bash
+curl -X POST http://127.0.0.1:8000/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "profile_id": "java-default",
+    "experiment_number": "1",
+    "aim": "Write a Java program to print Hello World",
+    "source_code": "public class Hello {\n  public static void main(String[] args) {\n    System.out.println(\"Hello, World!\");\n  }\n}"
+  }'
+```
+
+Response:
+```json
+{
+  "filename": "report_java-default_exp1_a1b2c3d4.docx",
+  "file_path": "app/storage/generated/report_java-default_exp1_a1b2c3d4.docx",
+  "download_url": "/download/report_java-default_exp1_a1b2c3d4.docx",
+  "profile_id": "java-default",
+  "experiment_number": "1",
+  "aim": "Write a Java program to print Hello World"
+}
+```
+
+#### `GET /download/{filename}` – Download generated file
+
+```bash
+curl -O http://127.0.0.1:8000/download/report_java-default_exp1_a1b2c3d4.docx
+```
+
+> A ready-to-use default profile (`java-default`) is pre-loaded in `app/storage/profiles/`.
+
+---
+
+## ⚡ Features (M1 Web Service)
 
 - **Multi-Language Support:** `.java`, `.py`, `.c`, `.cpp`, `.cs`, and `.js` files.
 - **Instant Formatting:** Generates a professional Word (`.docx`) file with Standard Heading, Aim, Source Code, and Output sections.
