@@ -171,8 +171,10 @@ def _alignment_name(alignment) -> str:
 
 def _resolve_template_path(template_id: str) -> Path:
     safe_id = _safe_id(template_id)
-    path = (TEMPLATES_DIR / f"{safe_id}.docx").resolve()
-    if not str(path).startswith(str(TEMPLATES_DIR.resolve())):
+    base = TEMPLATES_DIR.resolve()
+    path = (base / f"{safe_id}.docx").resolve()
+    # Ensure the resolved path is directly inside the templates directory
+    if path.parent != base:
         raise HTTPException(status_code=400, detail="Invalid template ID.")
     if not path.exists():
         raise HTTPException(status_code=404, detail=f"Template '{template_id}' not found.")
@@ -181,8 +183,10 @@ def _resolve_template_path(template_id: str) -> Path:
 
 def _resolve_meta_path(template_id: str) -> Path:
     safe_id = _safe_id(template_id)
-    path = (TEMPLATE_META_DIR / f"{safe_id}.json").resolve()
-    if not str(path).startswith(str(TEMPLATE_META_DIR.resolve())):
+    base = TEMPLATE_META_DIR.resolve()
+    path = (base / f"{safe_id}.json").resolve()
+    # Ensure the resolved path is directly inside the metadata directory
+    if path.parent != base:
         raise HTTPException(status_code=400, detail="Invalid template ID.")
     if not path.exists():
         raise HTTPException(
