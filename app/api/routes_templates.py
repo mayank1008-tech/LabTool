@@ -131,8 +131,8 @@ def create_profile_from_template(request: ProfileFromTemplateRequest):
             m = re.match(r"^(.*?[:|-]{1,2}\s*)", first_line)
             if m and len(m.group(1)) <= 40:
                 return m.group(1).rstrip()
-            if len(first_line) <= 60:
-                return first_line
+            # If no recognisable label prefix is found, fall back to the default label
+            # so body-only text never ends up as the section heading
         return default
 
     def _text_style(field: str, default_style: TextStyle) -> TextStyle:
