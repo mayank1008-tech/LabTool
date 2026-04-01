@@ -35,6 +35,16 @@
       color: #94a3b8;
       font-size: 0.9rem;
     }
+    nav {
+      margin-bottom: 1.5rem;
+    }
+    nav a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-size: 0.88rem;
+      margin-right: 1rem;
+    }
+    nav a:hover { text-decoration: underline; }
     label {
       display: block;
       font-size: 0.85rem;
@@ -101,6 +111,12 @@
   <div class="card">
     <h1>⚗️ LabTool</h1>
     <p class="subtitle">Generate a print-ready lab report DOCX from your source code.</p>
+
+    <nav>
+      <a href="/">🏠 Generate Report</a>
+      <a href="/upload-template">📤 Upload Template</a>
+      <a href="/docs" target="_blank">📚 API Docs</a>
+    </nav>
 
     <form id="genForm">
       <div class="field-row">

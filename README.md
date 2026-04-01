@@ -2,42 +2,45 @@
 
 > **"Trust the process && U Are the process"** - Mayank Jain
 
-**LabTool** is a powerful, cross-platform lab report generator that converts your source code into a print-ready Word (`.docx`) document in seconds. It now ships as a **FastAPI web service** with a minimal browser UI and a JSON-driven template profile system — no more hardcoded formatting.
+**LabTool** is a powerful, cross-platform lab report generator that converts your source code into a print-ready Word (`.docx`) document in seconds. It ships as a **FastAPI web service** with a minimal browser UI, a JSON-driven template profile system, and — as of **M2** — a full DOCX template upload and field-mapping workflow.
 
 ![Python](https://img.shields.io/badge/Python-3.x-blue?style=for-the-badge&logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-teal?style=for-the-badge&logo=fastapi)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20|%20Linux%20|%20MacOS-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-M1%20Release-brightgreen?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-M2%20Release-brightgreen?style=for-the-badge)
 
 ---
 
-## 🆕 M1 – FastAPI Web Service (current)
+## 🆕 M2 – Template Upload & Mapping (current)
 
-LabTool has been refactored from a single CLI script into a modular **FastAPI application** with:
+Upload an existing `.docx` lab-report template, let LabTool suggest field mappings, confirm/adjust them in a simple UI, and save a reusable profile — all without touching JSON manually.
 
-- **Non-hardcoded Template Profiles** – define font, size, labels, spacing as JSON files.
-- **REST API** for creating profiles and generating reports.
-- **Minimal Web UI** served at `/` for browser-based generation.
-- **Local filesystem storage** for profiles and generated documents.
-
-### 📁 Project Structure
+### 📁 Project Structure (M2)
 
 ```
 app/
-├── main.py                     # FastAPI app + route registration
-├── core/config.py              # App settings and storage paths
-├── models/schemas.py           # Pydantic schemas
+├── main.py                          # FastAPI app + route registration
+├── core/config.py                   # App settings and storage paths
+├── models/schemas.py                # Pydantic schemas (M1 + M2)
 ├── api/
-│   ├── routes_profiles.py      # POST /profiles, GET /profiles/{id}
-│   └── routes_generate.py      # POST /generate, GET /download/{filename}
+│   ├── routes_profiles.py           # POST /profiles, GET /profiles/{id}
+│   ├── routes_generate.py           # POST /generate, GET /download/{filename}
+│   └── routes_templates.py          # M2: upload / suggest / from-template
 ├── services/
-│   ├── profile_service.py      # Profile persistence (JSON files)
-│   ├── docx_builder.py         # python-docx document assembly
-│   └── generator_service.py    # Orchestrates profile + builder
+│   ├── profile_service.py           # Profile persistence (JSON files)
+│   ├── docx_builder.py              # python-docx document assembly
+│   ├── generator_service.py         # Orchestrates profile + builder
+│   ├── template_extract_service.py  # M2: DOCX parsing & metadata extraction
+│   └── mapping_service.py           # M2: heuristic field-mapping suggestions
 ├── storage/
-│   ├── profiles/               # Saved profile JSON files
-│   └── generated/              # Generated .docx files
-└── templates/index.html        # Minimal web UI
+│   ├── profiles/                    # Saved profile JSON files
+│   ├── generated/                   # Generated .docx files
+│   ├── templates/                   # Uploaded .docx template files
+│   └── template_meta/               # Extracted metadata JSON files
+└── templates/
+    ├── index.html                   # Generate report UI
+    ├── upload.html                  # M2: template upload UI
+    └── confirm_mapping.html         # M2: mapping confirmation UI
 ```
 
 ### 🚀 Quick Start
@@ -50,15 +53,16 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 
 # 3. Open the web UI
-# http://127.0.0.1:8000/
-#
-# Or browse the auto-generated API docs:
-# http://127.0.0.1:8000/docs
+# http://127.0.0.1:8000/                  ← Generate report (M1)
+# http://127.0.0.1:8000/upload-template   ← Upload template (M2)
+# http://127.0.0.1:8000/docs              ← API docs
 ```
 
 ### 🔌 API Endpoints
 
-#### `POST /profiles` – Create a template profile
+#### M1 Endpoints (unchanged)
+
+##### `POST /profiles` – Create a template profile manually
 
 ```bash
 curl -X POST http://127.0.0.1:8000/profiles \
@@ -87,13 +91,13 @@ curl -X POST http://127.0.0.1:8000/profiles \
   }'
 ```
 
-#### `GET /profiles/{id}` – Fetch a profile
+##### `GET /profiles/{id}` – Fetch a profile
 
 ```bash
 curl http://127.0.0.1:8000/profiles/java-default
 ```
 
-#### `POST /generate` – Generate a `.docx` report
+##### `POST /generate` – Generate a `.docx` report
 
 ```bash
 curl -X POST http://127.0.0.1:8000/generate \
@@ -118,13 +122,116 @@ Response:
 }
 ```
 
-#### `GET /download/{filename}` – Download generated file
+##### `GET /download/{filename}` – Download generated file
 
 ```bash
 curl -O http://127.0.0.1:8000/download/report_java-default_exp1_a1b2c3d4.docx
 ```
 
 > A ready-to-use default profile (`java-default`) is pre-loaded in `app/storage/profiles/`.
+
+---
+
+#### M2 Endpoints
+
+##### `POST /templates/upload` – Upload a DOCX template
+
+Accepts a `.docx` file, stores it, extracts block metadata, and returns a `template_id`.
+
+```bash
+curl -X POST http://127.0.0.1:8000/templates/upload \
+  -F "file=@/path/to/your/lab_template.docx"
+```
+
+Response:
+```json
+{
+  "template_id": "196e1a88efaf4f5b",
+  "original_filename": "lab_template.docx",
+  "stored_path": "app/storage/templates/196e1a88efaf4f5b.docx",
+  "metadata_path": "app/storage/template_meta/196e1a88efaf4f5b.json",
+  "paragraph_count": 6,
+  "table_count": 0
+}
+```
+
+##### `POST /templates/{template_id}/suggest-mapping` – Get heuristic field suggestions
+
+Analyses the extracted metadata and returns scored candidates for `experiment_number`, `aim`, `source_code`, and `output`.
+
+```bash
+curl -X POST http://127.0.0.1:8000/templates/196e1a88efaf4f5b/suggest-mapping
+```
+
+Response:
+```json
+{
+  "template_id": "196e1a88efaf4f5b",
+  "suggestions": [
+    {
+      "block_index": 0,
+      "text_snippet": "Program 1",
+      "style_hint": "bold 16.0pt center",
+      "confidence": 0.7,
+      "field_name": "experiment_number"
+    },
+    {
+      "block_index": 1,
+      "text_snippet": "Aim:- To write a Java program...",
+      "style_hint": "bold underline 12.0pt",
+      "confidence": 0.4,
+      "field_name": "aim"
+    }
+  ]
+}
+```
+
+##### `POST /profiles/from-template` – Create a profile from confirmed mappings
+
+Takes user-confirmed `block_index → field_name` assignments and saves a fully reusable profile.
+
+```bash
+curl -X POST http://127.0.0.1:8000/profiles/from-template \
+  -H "Content-Type: application/json" \
+  -d '{
+    "template_id": "196e1a88efaf4f5b",
+    "profile_id": "my-lab-profile",
+    "profile_name": "My Lab Template",
+    "confirmed_mappings": [
+      {"block_index": 0, "field_name": "experiment_number"},
+      {"block_index": 1, "field_name": "aim"},
+      {"block_index": 2, "field_name": "source_code"},
+      {"block_index": 4, "field_name": "output"}
+    ]
+  }'
+```
+
+The returned profile is immediately usable with `POST /generate`:
+
+```bash
+curl -X POST http://127.0.0.1:8000/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "profile_id": "my-lab-profile",
+    "experiment_number": "3",
+    "aim": "To implement bubble sort in Java",
+    "source_code": "// your code here"
+  }'
+```
+
+---
+
+### 🖥 M2 UI Workflow
+
+1. **Open** `http://127.0.0.1:8000/upload-template`
+2. **Drag & drop** (or click to browse) your `.docx` lab report template
+3. Click **Upload Template** → you are redirected to the confirmation page
+4. On the confirmation page:
+   - Review each block candidate and its suggested field assignment
+   - Adjust any incorrect dropdown selections
+   - Enter a **Profile ID** and **Profile Name**
+   - Click **Save Profile** once all required fields (aim, source_code, output) are mapped
+5. Use the saved profile with `POST /generate` or the Generate Report UI at `/`
 
 ---
 

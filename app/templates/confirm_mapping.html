@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LabTool – Map Template Sections</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    .page-wrap { max-width: 1100px; margin: 0 auto; }
+    h1 { margin: 0 0 0.25rem; font-size: 1.8rem; color: #38bdf8; }
+    p.subtitle { margin: 0 0 1.5rem; color: #94a3b8; font-size: 0.9rem; }
+    nav { margin-bottom: 1.5rem; }
+    nav a { color: #38bdf8; text-decoration: none; font-size: 0.88rem; margin-right: 1rem; }
+    nav a:hover { text-decoration: underline; }
+
+    /* Two-column layout */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+
+    /* Document viewer panel */
+    .doc-panel {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .doc-panel h2 {
+      margin: 0 0 1rem;
+      font-size: 1rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* Legend */
+    .legend { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; color: #94a3b8; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* Individual block card */
+    .block-card {
+      position: relative;
+      background: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.6rem;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .block-card.assigned-experiment_number { border-color: #a78bfa; background: #1e1a2e; }
+    .block-card.assigned-aim              { border-color: #34d399; background: #0d2318; }
+    .block-card.assigned-source_code      { border-color: #38bdf8; background: #0a1e2b; }
+    .block-card.assigned-output           { border-color: #fbbf24; background: #201a09; }
+
+    /* Field badge */
+    .field-badge {
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.35rem;
+    }
+    .badge-ignore            { background: #1e293b; color: #64748b; display: none; }
+    .badge-experiment_number { background: #3b2f6e; color: #c4b5fd; }
+    .badge-aim               { background: #064e3b; color: #6ee7b7; }
+    .badge-source_code       { background: #0c3047; color: #7dd3fc; }
+    .badge-output            { background: #451a03; color: #fcd34d; }
+
+    /* Block text – approximate document styling */
+    .block-text {
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 5.5rem;
+      overflow: hidden;
+    }
+    .block-text.expanded { max-height: none; }
+    .expand-toggle {
+      font-size: 0.75rem;
+      color: #38bdf8;
+      cursor: pointer;
+      margin-top: 0.2rem;
+      display: none;
+    }
+
+    /* Field selector inside card */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+      border-top: 1px solid #1e293b;
+      padding-top: 0.5rem;
+    }
+    .card-footer label { font-size: 0.78rem; color: #64748b; white-space: nowrap; margin: 0; }
+    .card-footer select {
+      flex: 1;
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .card-footer select:focus { border-color: #38bdf8; }
+
+    /* Right sidebar – profile save panel */
+    .save-panel {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 1.5rem;
+    }
+    .save-panel h2 {
+      margin: 0 0 1rem;
+      font-size: 1rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .save-panel label { display: block; font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.25rem; margin-top: 0.85rem; }
+    .save-panel input {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border-radius: 7px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .save-panel input:focus { border-color: #38bdf8; }
+    .save-panel input.input-error { border-color: #dc2626; }
+    .field-error { color: #f87171; font-size: 0.78rem; margin-top: 0.2rem; display: none; }
+    .field-error.visible { display: block; }
+
+    /* Required fields checklist */
+    .req-list {
+      margin-top: 1.1rem;
+      padding: 0.75rem;
+      background: #0f172a;
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+    .req-list p { margin: 0 0 0.4rem; color: #64748b; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .req-item { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.3rem; }
+    .req-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #334155; }
+    .req-item.ok  .dot  { background: #34d399; }
+    .req-item.bad .dot  { background: #f87171; }
+    .req-item .req-label { color: #94a3b8; }
+    .req-item.ok  .req-label { color: #34d399; }
+    .req-item.bad .req-label { color: #f87171; }
+
+    .save-btn {
+      margin-top: 1.25rem;
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: none;
+      background: #0ea5e9;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .save-btn:hover { background: #38bdf8; }
+    .save-btn:disabled { background: #334155; cursor: not-allowed; }
+
+    #status {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      display: none;
+      font-size: 0.88rem;
+    }
+    #status.success { background: #064e3b; border: 1px solid #059669; display: block; }
+    #status.error   { background: #450a0a; border: 1px solid #dc2626; display: block; }
+    #status h3 { margin: 0 0 0.4rem; font-size: 0.95rem; }
+    #status a  { color: #38bdf8; font-weight: 600; text-decoration: none; }
+    #status a:hover { text-decoration: underline; }
+
+    #loadingMsg { color: #94a3b8; font-size: 0.92rem; margin: 2rem auto; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <h1>⚗️ LabTool – Map Template Sections</h1>
+    <p class="subtitle">Each paragraph block from your template is shown below. Use the dropdown on each block to assign it to the correct lab-report field, then save your profile.</p>
+
+    <nav>
+      <a href="/">🏠 Generate Report</a>
+      <a href="/upload-template">📤 Upload Template</a>
+      <a href="/docs" target="_blank">�� API Docs</a>
+    </nav>
+
+    <div id="loadingMsg">Loading template blocks…</div>
+
+    <div class="layout" id="mainLayout" style="display:none">
+
+      <!-- Left: document-like block cards -->
+      <div class="doc-panel">
+        <h2>📄 Template Blocks</h2>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div> Experiment No.</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div> Aim</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div> Source Code</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div> Output</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#334155"></div> Ignore</div>
+        </div>
+        <div id="blockCards"></div>
+      </div>
+
+      <!-- Right: profile save panel -->
+      <div class="save-panel">
+        <h2>💾 Save Profile</h2>
+
+        <label for="profileId">Profile ID <span style="color:#ef4444">*</span></label>
+        <input id="profileId" type="text" placeholder="e.g. my-lab-profile" />
+        <div class="field-error" id="profileIdError">Please enter a Profile ID.</div>
+
+        <label for="profileName">Profile Name <span style="color:#ef4444">*</span></label>
+        <input id="profileName" type="text" placeholder="e.g. My Lab Template" />
+        <div class="field-error" id="profileNameError">Please enter a Profile Name.</div>
+
+        <div class="req-list">
+          <p>Required fields</p>
+          <div class="req-item bad" id="reqAim">
+            <div class="dot"></div><span class="req-label">Aim</span>
+          </div>
+          <div class="req-item bad" id="reqCode">
+            <div class="dot"></div><span class="req-label">Source Code</span>
+          </div>
+          <div class="req-item bad" id="reqOut">
+            <div class="dot"></div><span class="req-label">Output</span>
+          </div>
+        </div>
+
+        <button class="save-btn" id="saveBtn" disabled>Save Profile</button>
+
+        <div id="status"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FIELD_OPTIONS = ["ignore", "experiment_number", "aim", "source_code", "output"];
+    const FIELD_LABELS = {
+      ignore: "Ignore",
+      experiment_number: "Experiment Number",
+      aim: "Aim",
+      source_code: "Source Code",
+      output: "Output",
+    };
+
+    const params = new URLSearchParams(location.search);
+    const templateId = params.get("template_id") || "";
+
+    const loadingMsg = document.getElementById("loadingMsg");
+    const mainLayout = document.getElementById("mainLayout");
+    const blockCards = document.getElementById("blockCards");
+    const saveBtn    = document.getElementById("saveBtn");
+    const statusDiv  = document.getElementById("status");
+
+    let candidates = [];
+
+    async function loadSuggestions() {
+      if (!templateId) {
+        loadingMsg.textContent = "No template_id provided. Go back and upload a template first.";
+        return;
+      }
+      try {
+        const resp = await fetch(`/templates/${encodeURIComponent(templateId)}/suggest-mapping`, { method: "POST" });
+        const data = await resp.json();
+        if (!resp.ok) {
+          loadingMsg.textContent = `Error: ${data.detail || JSON.stringify(data)}`;
+          return;
+        }
+        candidates = data.suggestions || [];
+        // Display in natural document order (block_index ascending)
+        candidates.sort((a, b) => a.block_index - b.block_index);
+        renderCards(candidates);
+        loadingMsg.style.display = "none";
+        mainLayout.style.display = "grid";
+      } catch (err) {
+        loadingMsg.textContent = `Network error: ${err.message}`;
+      }
+    }
+
+    function renderCards(items) {
+      blockCards.innerHTML = "";
+      items.forEach((c, i) => {
+        const card = document.createElement("div");
+        card.className = "block-card" + (c.field_name !== "ignore" ? ` assigned-${c.field_name}` : "");
+        card.dataset.idx = i;
+
+        const isLong = c.text_snippet.length > 200;
+
+        card.innerHTML = `
+          <div class="field-badge badge-${c.field_name}" id="badge-${i}"
+               style="${c.field_name === 'ignore' ? 'display:none' : ''}"
+          >${FIELD_LABELS[c.field_name] || c.field_name}</div>
+          <div class="block-text" id="blockText-${i}" style="${buildInlineStyle(c)}">${escHtml(c.text_snippet)}</div>
+          ${isLong ? `<div class="expand-toggle" id="toggle-${i}" style="display:block" onclick="toggleExpand(${i})">Show more ▾</div>` : ""}
+          <div class="card-footer">
+            <label>Assign to:</label>
+            <select data-idx="${i}" onchange="onFieldChange(this, ${i})">
+              ${FIELD_OPTIONS.map(f =>
+                `<option value="${f}" ${f === c.field_name ? "selected" : ""}>${FIELD_LABELS[f]}</option>`
+              ).join("")}
+            </select>
+          </div>
+        `;
+        blockCards.appendChild(card);
+      });
+      updateReqCheck();
+    }
+
+    function buildInlineStyle(c) {
+      const parts = [];
+      const hint = c.style_hint || "";
+      if (hint.includes("bold")) parts.push("font-weight:700");
+      if (hint.includes("italic")) parts.push("font-style:italic");
+      if (hint.includes("underline")) parts.push("text-decoration:underline");
+      const sizeMatch = hint.match(/(\d+(?:\.\d+)?)pt/);
+      if (sizeMatch) {
+        const pt = parseFloat(sizeMatch[1]);
+        if (pt >= 14) parts.push("font-size:" + Math.min(pt * 0.85, 20) + "px");
+      }
+      if (/courier|consolas|monospace/i.test(hint)) parts.push("font-family:'Courier New',monospace");
+      if (hint.includes("center")) parts.push("text-align:center");
+      return parts.join(";");
+    }
+
+    function toggleExpand(i) {
+      const el  = document.getElementById("blockText-" + i);
+      const tog = document.getElementById("toggle-" + i);
+      if (el.classList.contains("expanded")) {
+        el.classList.remove("expanded");
+        tog.textContent = "Show more ▾";
+      } else {
+        el.classList.add("expanded");
+        tog.textContent = "Show less ▴";
+      }
+    }
+
+    function onFieldChange(sel, i) {
+      const card  = document.querySelector('.block-card[data-idx="' + i + '"]');
+      const badge = document.getElementById("badge-" + i);
+      const newField = sel.value;
+      card.className  = "block-card" + (newField !== "ignore" ? " assigned-" + newField : "");
+      badge.className = "field-badge badge-" + newField;
+      badge.textContent = FIELD_LABELS[newField] || newField;
+      badge.style.display = newField === "ignore" ? "none" : "";
+      updateReqCheck();
+    }
+
+    function updateReqCheck() {
+      const selects  = document.querySelectorAll("#blockCards select");
+      const assigned = new Set(Array.from(selects).map(s => s.value));
+      const checks = [
+        { field: "aim",         id: "reqAim"  },
+        { field: "source_code", id: "reqCode" },
+        { field: "output",      id: "reqOut"  },
+      ];
+      let allOk = true;
+      for (const { field, id } of checks) {
+        const el = document.getElementById(id);
+        el.className = assigned.has(field) ? "req-item ok" : "req-item bad";
+        if (!assigned.has(field)) allOk = false;
+      }
+      saveBtn.disabled = !allOk;
+    }
+
+    saveBtn.addEventListener("click", async () => {
+      const profileIdInput   = document.getElementById("profileId");
+      const profileNameInput = document.getElementById("profileName");
+      const profileId   = profileIdInput.value.trim();
+      const profileName = profileNameInput.value.trim();
+
+      let hasError = false;
+      const profileIdErr   = document.getElementById("profileIdError");
+      const profileNameErr = document.getElementById("profileNameError");
+
+      if (!profileId) {
+        profileIdErr.classList.add("visible"); profileIdInput.classList.add("input-error"); hasError = true;
+      } else {
+        profileIdErr.classList.remove("visible"); profileIdInput.classList.remove("input-error");
+      }
+      if (!profileName) {
+        profileNameErr.classList.add("visible"); profileNameInput.classList.add("input-error"); hasError = true;
+      } else {
+        profileNameErr.classList.remove("visible"); profileNameInput.classList.remove("input-error");
+      }
+      if (hasError) return;
+
+      const selects = document.querySelectorAll("#blockCards select");
+      const confirmedMappings = [];
+      selects.forEach((sel, i) => {
+        if (sel.value !== "ignore") {
+          confirmedMappings.push({ block_index: candidates[i].block_index, field_name: sel.value });
+        }
+      });
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+      statusDiv.className = ""; statusDiv.style.display = "none";
+
+      try {
+        const resp = await fetch("/profiles/from-template", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            template_id: templateId,
+            profile_id: profileId,
+            profile_name: profileName,
+            confirmed_mappings: confirmedMappings,
+          }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          statusDiv.className = "success";
+          statusDiv.innerHTML = `
+            <h3>&#x2705; Profile saved!</h3>
+            <p>Profile ID: <strong>${escHtml(data.id)}</strong></p>
+            <a href="/?profile_id=${encodeURIComponent(data.id)}">&#x27A1; Go to Generate Report</a>
+          `;
+        } else {
+          statusDiv.className = "error";
+          statusDiv.innerHTML = `<h3>&#x274C; Error</h3><p>${escHtml(data.detail || JSON.stringify(data))}</p>`;
+        }
+      } catch (err) {
+        statusDiv.className = "error";
+        statusDiv.innerHTML = `<h3>&#x274C; Network error</h3><p>${escHtml(err.message)}</p>`;
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Profile";
+        updateReqCheck();
+      }
+    });
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    loadSuggestions();
+  </script>
+</body>
+</html>
